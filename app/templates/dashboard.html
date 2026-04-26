@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ETL Monitor — Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #0f0f13; min-height: 100vh; padding: 2rem; color: #e2e2e8; }
+
+    .header { max-width: 1200px; margin: 0 auto 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header h1 { font-size: 20px; font-weight: 600; color: #ffffff; }
+    .back { font-size: 13px; color: #7b8cde; text-decoration: none; padding: 6px 14px; border: 1px solid #2a2a3a; border-radius: 8px; transition: background 0.2s; }
+    .back:hover { background: #1a1a2e; }
+    .header-actions { display: flex; gap: 10px; }
+    .btn-export { font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; transition: opacity 0.2s; }
+    .btn-pdf { background: #7b8cde; color: #0f0f13; }
+    .btn-pdf:hover { opacity: 0.85; }
+
+    .sector-badge { font-size: 11px; padding: 4px 12px; border-radius: 20px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .badge-ventes { background: #3d2a00; color: #f5a623; }
+    .badge-rh { background: #0a2540; color: #4da6ff; }
+    .badge-finance { background: #2a0a0a; color: #ff6b6b; }
+    .badge-logistique { background: #0a2a1a; color: #4dffb4; }
+    .badge-marketing { background: #1a0a2a; color: #c084fc; }
+    .badge-generique { background: #1a1a1a; color: #aaa; }
+
+    .kpi-grid { max-width: 1200px; margin: 0 auto 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .kpi-card { background: #16161f; border: 1px solid #2a2a3a; border-radius: 12px; padding: 1.25rem; position: relative; overflow: hidden; }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #7b8cde, #4dffb4); }
+    .kpi-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1; }
+    .kpi-sub { font-size: 11px; color: #555; margin-top: 4px; }
+
+    .charts-grid { max-width: 1200px; margin: 0 auto 1.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .chart-card { background: #16161f; border: 1px solid #2a2a3a; border-radius: 12px; padding: 1.5rem; min-height: 320px; display: flex; flex-direction: column; }
+    .chart-card h3 { font-size: 12px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; }
+    .chart-wrapper { flex: 1; position: relative; min-height: 280px; max-height: 320px; }
+
+    .table-section { max-width: 1200px; margin: 0 auto 1.5rem; }
+    .table-card { background: #16161f; border: 1px solid #2a2a3a; border-radius: 12px; padding: 1.5rem; overflow-x: auto; }
+    .table-card h3 { font-size: 12px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; color: #555; font-weight: 500; border-bottom: 1px solid #2a2a3a; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+    td { padding: 12px 14px; border-bottom: 1px solid #1e1e2a; color: #ccc; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1a1a26; }
+
+    .meta-bar { max-width: 1200px; margin: 0 auto 1.5rem; display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .meta-bar span { color: #888; }
+
+    .loader { text-align: center; padding: 5rem; color: #555; }
+    .spinner { width: 36px; height: 36px; border: 2px solid #2a2a3a; border-top-color: #7b8cde; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <a class="back" href="/">← Retour</a>
+      <h1 id="pageTitle">Dashboard</h1>
+      <span class="sector-badge" id="sectorBadge"></span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-export btn-pdf" onclick="exportPDF()">Exporter PDF</button>
+    </div>
+  </div>
+
+  <div id="loader" class="loader">
+    <div class="spinner"></div>
+    <p>Chargement du dashboard...</p>
+  </div>
+
+  <div id="content" style="display:none;">
+    <div class="meta-bar">
+      <div>Fichier : <span id="metaFile">—</span></div>
+      <div>Lignes : <span id="metaRows">—</span></div>
+      <div>Colonnes : <span id="metaCols">—</span></div>
+      <div>Généré le : <span id="metaDate">—</span></div>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="charts-grid" id="chartsGrid"></div>
+    <div class="table-section" id="tableSection" style="display:none;">
+      <div class="table-card">
+        <h3 id="tableTitle"></h3>
+        <table id="dataTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const datasetId = window.location.pathname.split('/').pop();
+    const COLORS = ['#7b8cde','#4dffb4','#f5a623','#ff6b6b','#c084fc','#4da6ff','#ff9f7f','#80ffdb'];
+    const SECTOR_LABELS = { ventes:'Ventes', rh:'RH', finance:'Finance', logistique:'Logistique', marketing:'Marketing', generique:'Générique' };
+
+    let currentData = null;
+    const chartInstances = {};
+
+    function formatNumber(n) {
+      if (typeof n !== 'number') return n;
+      if (Number.isInteger(n)) return n.toLocaleString('fr-FR');
+      return parseFloat(n.toFixed(2)).toLocaleString('fr-FR');
+    }
+
+    function renderKPIs(kpis) {
+      const grid = document.getElementById('kpiGrid');
+      const simple = Object.entries(kpis).filter(([k,v]) => typeof v === 'number');
+      grid.innerHTML = simple.map(([key, val]) => `
+        <div class="kpi-card">
+          <div class="kpi-label">${key.replace(/_/g,' ')}</div>
+          <div class="kpi-value">${formatNumber(val)}</div>
+        </div>
+      `).join('');
+    }
+
+function renderCharts(charts) {
+  const grid = document.getElementById('chartsGrid');
+  grid.innerHTML = '';
+  Object.entries(charts).forEach(([key, chart], i) => {
+    const div = document.createElement('div');
+    div.className = 'chart-card';
+    div.innerHTML = `<h3>${chart.title}</h3><div class="chart-wrapper"><canvas id="chart-${key}"></canvas></div>`;
+    grid.appendChild(div);
+
+    if (chartInstances[key]) chartInstances[key].destroy();
+    const ctx = document.getElementById(`chart-${key}`).getContext('2d');
+    const isPie = chart.type === 'pie';
+    const isBar = chart.type === 'bar';
+
+    chartInstances[key] = new Chart(ctx, {
+      type: isPie ? 'doughnut' : chart.type,
+      data: {
+        labels: chart.labels,
+        datasets: [{
+          data: chart.values,
+          backgroundColor: isPie
+            ? COLORS.slice(0, chart.values.length)
+            : COLORS.slice(0, chart.values.length).map(c => c + '99'),
+          borderColor: isPie ? 'transparent' : COLORS.slice(0, chart.values.length),
+          borderWidth: isPie ? 0 : 1.5,
+          borderRadius: isBar ? 6 : 0,
+          fill: chart.type === 'line',
+          tension: 0.4,
+          pointRadius: chart.type === 'line' ? 4 : 0,
+          pointBackgroundColor: COLORS[i % COLORS.length],
+          pointBorderColor: '#0f0f13',
+          pointBorderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { bottom: isPie ? 10 : 0 } },
+        plugins: {
+          legend: {
+            display: isPie,
+            position: 'bottom',
+            labels: {
+              color: '#aaa',
+              font: { size: 11 },
+              padding: 12,
+              boxWidth: 10,
+              boxHeight: 10,
+            }
+          },
+          tooltip: {
+            backgroundColor: '#1e1e2a',
+            titleColor: '#fff',
+            bodyColor: '#aaa',
+            borderColor: '#2a2a3a',
+            borderWidth: 1,
+            padding: 10,
+          }
+        },
+        cutout: isPie ? '60%' : undefined,
+        scales: !isPie ? {
+          x: {
+            grid: { color: '#1e1e2a' },
+            ticks: {
+              color: '#666',
+              font: { size: 10 },
+              maxRotation: 30,
+              minRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 8,
+            }
+          },
+          y: {
+            grid: { color: '#1e1e2a' },
+            ticks: { color: '#666', font: { size: 11 } }
+          }
+        } : {}
+      }
+    });
+  });
+}
+
+    function renderTable(kpis) {
+      const listKpis = Object.entries(kpis).filter(([k,v]) => Array.isArray(v) && v.length > 0);
+      if (!listKpis.length) return;
+      const [key, rows] = listKpis[0];
+      if (!rows.length) return;
+      const headers = Object.keys(rows[0]);
+      document.getElementById('tableTitle').textContent = key.replace(/_/g,' ');
+      document.getElementById('dataTable').innerHTML = `
+        <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(row => `
+          <tr>${headers.map(h => `<td>${typeof row[h] === 'number' ? formatNumber(row[h]) : row[h]}</td>`).join('')}</tr>
+        `).join('')}</tbody>
+      `;
+      document.getElementById('tableSection').style.display = 'block';
+    }
+
+    async function exportPDF() {
+      const btn = document.querySelector('.btn-pdf');
+      btn.textContent = 'Génération...';
+      btn.disabled = true;
+
+      try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const W = 210; const margin = 15;
+
+        // Header
+        pdf.setFillColor(15, 15, 19);
+        pdf.rect(0, 0, W, 40, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('ETL Monitor — Rapport d\'analyse', margin, 18);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(150, 150, 170);
+        pdf.text(`Fichier : ${currentData.filename}`, margin, 27);
+        pdf.text(`Secteur : ${SECTOR_LABELS[currentData.sector] || currentData.sector}   |   ${currentData.rows_count} lignes · ${currentData.columns_count} colonnes`, margin, 34);
+
+        let y = 50;
+
+        // KPIs
+        pdf.setTextColor(100, 100, 130);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('INDICATEURS CLÉS', margin, y);
+        y += 6;
+
+        const simple = Object.entries(currentData.kpis).filter(([k,v]) => typeof v === 'number');
+        const colW = (W - margin * 2) / 3;
+        simple.forEach(([key, val], i) => {
+          const col = i % 3;
+          const row = Math.floor(i / 3);
+          const cx = margin + col * colW;
+          const cy = y + row * 22;
+
+          pdf.setFillColor(22, 22, 31);
+          pdf.roundedRect(cx, cy, colW - 4, 18, 3, 3, 'F');
+          pdf.setTextColor(150, 150, 170);
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(key.replace(/_/g,' ').toUpperCase(), cx + 4, cy + 6);
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(formatNumber(val).toString(), cx + 4, cy + 14);
+        });
+
+        y += Math.ceil(simple.length / 3) * 22 + 10;
+
+        // Graphiques
+        pdf.setTextColor(100, 100, 130);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('GRAPHIQUES', margin, y);
+        y += 6;
+
+        const chartKeys = Object.keys(currentData.charts);
+        for (let i = 0; i < chartKeys.length; i++) {
+          const canvas = document.getElementById(`chart-${chartKeys[i]}`);
+          if (!canvas) continue;
+          const imgData = canvas.toDataURL('image/png');
+          const chartH = 55;
+          if (y + chartH > 280) { pdf.addPage(); y = 15; }
+          pdf.setFillColor(22, 22, 31);
+          pdf.roundedRect(margin, y, W - margin * 2, chartH, 3, 3, 'F');
+          pdf.addImage(imgData, 'PNG', margin + 2, y + 2, W - margin * 2 - 4, chartH - 4);
+          y += chartH + 6;
+        }
+
+        // Tableau
+        const listKpis = Object.entries(currentData.kpis).filter(([k,v]) => Array.isArray(v) && v.length > 0);
+        if (listKpis.length > 0) {
+          if (y + 20 > 280) { pdf.addPage(); y = 15; }
+          pdf.setTextColor(100, 100, 130);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('TABLEAU DE DONNÉES', margin, y);
+          y += 6;
+
+          const [key, rows] = listKpis[0];
+          if (rows.length > 0) {
+            const headers = Object.keys(rows[0]);
+            const colWidth = (W - margin * 2) / headers.length;
+
+            pdf.setFillColor(30, 30, 42);
+            pdf.rect(margin, y, W - margin * 2, 8, 'F');
+            pdf.setTextColor(150, 150, 170);
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            headers.forEach((h, i) => pdf.text(h.toUpperCase(), margin + i * colWidth + 3, y + 5.5));
+            y += 8;
+
+            rows.forEach((row, ri) => {
+              if (y > 275) { pdf.addPage(); y = 15; }
+              if (ri % 2 === 0) {
+                pdf.setFillColor(22, 22, 31);
+                pdf.rect(margin, y, W - margin * 2, 7, 'F');
+              }
+              pdf.setTextColor(200, 200, 210);
+              pdf.setFontSize(8);
+              pdf.setFont('helvetica', 'normal');
+              headers.forEach((h, i) => {
+                const val = typeof row[h] === 'number' ? formatNumber(row[h]).toString() : String(row[h]);
+                pdf.text(val.substring(0, 20), margin + i * colWidth + 3, y + 5);
+              });
+              y += 7;
+            });
+          }
+        }
+
+        // Footer
+        pdf.setTextColor(80, 80, 100);
+        pdf.setFontSize(8);
+        pdf.text(`ETL Monitor — Rapport généré le ${new Date().toLocaleDateString('fr-FR')}`, margin, 292);
+
+        pdf.save(`rapport_${currentData.filename.replace('.csv','')}_${new Date().toISOString().slice(0,10)}.pdf`);
+
+      } catch(e) {
+        console.error(e);
+        alert('Erreur lors de la génération du PDF');
+      }
+
+      btn.textContent = 'Exporter PDF';
+      btn.disabled = false;
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`/api/v1/datasets/${datasetId}`);
+        const data = await res.json();
+        currentData = data;
+
+        document.getElementById('pageTitle').textContent = data.filename;
+        const badge = document.getElementById('sectorBadge');
+        badge.textContent = SECTOR_LABELS[data.sector] || data.sector;
+        badge.className = `sector-badge badge-${data.sector}`;
+
+        document.getElementById('metaFile').textContent = data.filename;
+        document.getElementById('metaRows').textContent = (data.rows_count || 0).toLocaleString('fr-FR');
+        document.getElementById('metaCols').textContent = data.columns_count || 0;
+        document.getElementById('metaDate').textContent = data.created_at.slice(0,16).replace('T',' ');
+
+        if (data.status === 'done') {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+          renderKPIs(data.kpis);
+          renderCharts(data.charts);
+          renderTable(data.kpis);
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    loadDashboard();
+    setInterval(loadDashboard, 5000);
+  </script>
+</body>
+</html>

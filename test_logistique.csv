@@ -1,0 +1,21 @@
+id_article,produit,fournisseur,categorie,stock,stock_minimum,prix_unitaire,statut,entrepot,date_entree
+1,Ordinateur Dell,TechSupply,Informatique,45,10,850.00,disponible,Entrepot_A,2026-01-15
+2,Souris Logitech,TechSupply,Informatique,120,20,25.50,disponible,Entrepot_A,2026-01-15
+3,Clavier Mécanique,KeyMaster,Informatique,30,10,75.00,disponible,Entrepot_B,2026-01-20
+4,Ecran 24 pouces,ScreenPro,Informatique,15,5,320.00,disponible,Entrepot_A,2026-01-22
+5,Chaise Bureau,FurniCo,Mobilier,8,3,450.00,stock_faible,Entrepot_C,2026-02-01
+6,Bureau Ajustable,FurniCo,Mobilier,3,5,890.00,rupture,Entrepot_C,2026-02-01
+7,Imprimante HP,TechSupply,Informatique,22,8,280.00,disponible,Entrepot_A,2026-02-05
+8,Câble HDMI,AccessPro,Accessoires,200,50,8.50,disponible,Entrepot_B,2026-02-10
+9,Disque SSD 1TB,StoragePro,Informatique,60,15,120.00,disponible,Entrepot_A,2026-02-10
+10,Webcam HD,TechSupply,Informatique,18,10,95.00,disponible,Entrepot_B,2026-02-12
+11,Lampe Bureau,LightCo,Mobilier,35,10,45.00,disponible,Entrepot_C,2026-02-15
+12,Casque Audio,SoundPro,Accessoires,42,15,135.00,disponible,Entrepot_B,2026-02-18
+13,Tablette Samsung,TechSupply,Informatique,12,5,650.00,stock_faible,Entrepot_A,2026-02-20
+14,Toner Imprimante,AccessPro,Consommables,85,30,55.00,disponible,Entrepot_B,2026-02-22
+15,Papier A4,PaperCo,Consommables,500,100,12.00,disponible,Entrepot_C,2026-02-25
+16,Stylos (boite),PaperCo,Consommables,150,50,8.00,disponible,Entrepot_C,2026-02-25
+17,Serveur Dell,TechSupply,Informatique,4,2,3200.00,disponible,Entrepot_A,2026-03-01
+18,Switch Réseau,NetPro,Informatique,7,3,450.00,stock_faible,Entrepot_A,2026-03-05
+19,Armoire Métallique,FurniCo,Mobilier,2,3,780.00,rupture,Entrepot_C,2026-03-08
+20,Onduleur 1000W,PowerPro,Accessoires,9,4,220.00,disponible,Entrepot_B,2026-03-10

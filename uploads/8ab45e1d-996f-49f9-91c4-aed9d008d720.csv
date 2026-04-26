@@ -1,0 +1,31 @@
+id,produit,categorie,prix,quantite,client,region,date_vente,remise
+1,Ordinateur Dell,Informatique,850,2,Dupont SA,Nord,2026-01-05,0.05
+2,Souris Logitech,Informatique,25,10,Martin SARL,Sud,2026-01-06,0
+3,Clavier Mécanique,Informatique,75,5,Durand SAS,Est,2026-01-07,0.1
+4,Ecran 24 pouces,Informatique,320,3,Petit Co,Ouest,2026-01-08,0
+5,Chaise Bureau,Mobilier,450,1,Dupont SA,Nord,2026-01-09,0.15
+6,Bureau Ajustable,Mobilier,890,2,Leroy Inc,Sud,2026-01-10,0
+7,Imprimante HP,Informatique,280,4,Martin SARL,Est,2026-01-11,0.05
+8,Câble HDMI,Accessoires,8,20,Durand SAS,Nord,2026-01-12,0
+9,Disque SSD 1TB,Informatique,120,6,Petit Co,Ouest,2026-01-13,0.1
+10,Webcam HD,Informatique,95,3,Dupont SA,Sud,2026-01-14,0
+11,Lampe Bureau,Mobilier,45,8,Leroy Inc,Nord,2026-01-15,0
+12,Casque Audio,Accessoires,135,5,Martin SARL,Est,2026-01-16,0.05
+13,Tablette Samsung,Informatique,650,2,Durand SAS,Ouest,2026-01-17,0
+14,Toner Imprimante,Consommables,55,12,Petit Co,Nord,2026-01-18,0.1
+15,Papier A4,Consommables,12,50,Dupont SA,Sud,2026-01-19,0
+16,Stylos,Consommables,8,30,Leroy Inc,Est,2026-01-20,0
+17,Serveur Dell,Informatique,3200,1,Martin SARL,Nord,2026-01-21,0.2
+18,Switch Réseau,Informatique,450,2,Durand SAS,Ouest,2026-01-22,0
+19,Onduleur,Accessoires,220,3,Petit Co,Sud,2026-01-23,0.05
+20,Moniteur 27p,Informatique,520,4,Dupont SA,Nord,2026-01-24,0.1
+21,Ordinateur Dell,Informatique,850,3,Leroy Inc,Est,2026-01-25,0
+22,Souris Logitech,Informatique,25,15,Martin SARL,Ouest,2026-01-26,0
+23,Clavier Mécanique,Informatique,75,7,Durand SAS,Nord,2026-01-27,0.05
+24,Ecran 24 pouces,Informatique,320,2,Petit Co,Sud,2026-01-28,0.1
+25,Chaise Bureau,Mobilier,450,3,Dupont SA,Est,2026-01-29,0
+26,Bureau Ajustable,Mobilier,890,1,Leroy Inc,Ouest,2026-01-30,0.15
+27,Imprimante HP,Informatique,280,5,Martin SARL,Nord,2026-02-01,0
+28,Disque SSD 1TB,Informatique,120,8,Durand SAS,Sud,2026-02-02,0.05
+29,Webcam HD,Informatique,95,4,Petit Co,Est,2026-02-03,0
+30,Casque Audio,Accessoires,135,6,Dupont SA,Ouest,2026-02-04,0.1
